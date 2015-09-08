@@ -12,7 +12,6 @@ class ChiselTest < Minitest::Test
   end
 
   def test_it_parses_with_no_space_after_h1
-    skip
     chisel = Chisel.new("#My name is Sekhar.")
     output = chisel.split_and_parse
     assert_equal "<h1>My name is Sekhar.</h1>
@@ -96,6 +95,14 @@ class ChiselTest < Minitest::Test
     chisel = Chisel.new("##### My name is Blithe.")
     output = chisel.split_and_parse
     assert_equal "<h5>My name is Blithe.</h5>
+
+", output
+  end
+
+  def test_it_parses_with_no_space_after_h6
+    chisel = Chisel.new("######My name is Sekhar.")
+    output = chisel.split_and_parse
+    assert_equal "<h6>My name is Sekhar.</h6>
 
 ", output
   end
@@ -240,7 +247,7 @@ I grow cacti.")
 
   def test_it_parses_strong_inside_emphasis
     skip
-    # seems impossible to do the way the code was written
+    # need to refactor to do this if it's even possible
   end
 
   def test_it_parses_strong_inside_multiple_paragraphs
@@ -297,6 +304,7 @@ I grow cacti.")
 
   def test_it_parses_ul_lists_two_elements
     skip
+    # need to factor to catch multiple ul elements
     chisel = Chisel.new("* Adam Sandler sucks at acting.
 
 * He used to be kind of funny.")
@@ -317,6 +325,7 @@ I grow cacti.")
 
   def test_it_parses_ol_lists_two_elements
     skip
+    # need to refactor to catch multiple ol elements
     chisel = Chisel.new("1. Adam Sandler sucks at acting.
 
 2. He used to be kind of funny.")
