@@ -1,47 +1,54 @@
+require_relative 'headers'
+require_relative 'lists'
+require_relative 'formatting'
+
 class Chisel
-  # require another class per type of parsing,
-  # count hashtags and do headers first
-  # then split all paragraphs into an array of paragraphs
-  # combine all header code into few lines of code
 
-  def initialize
-  end             # => :initialize
+  attr_reader :text
 
-  def parse(text)
-    if text.include? "######"               # => false
-      snippet = text.split("###### ").last
-      "<h6>#{snippet}</h6>"
-    elsif text.include? "#####"             # => false
-      snippet = text.split("##### ").last
-      "<h5>#{snippet}</h5>"
-    elsif text.include? "####"              # => false
-      snippet = text.split("#### ").last
-      "<h4>#{snippet}</h4>"
-    elsif text.include? "###"               # => false
-      snippet = text.split("### ").last
-      "<h3>#{snippet}</h3>"
-    elsif text.include? "##"                # => false
-      snippet = text.split("## ").last
-      "<h2>#{snippet}</h2>"
-    elsif text.include? "#"                 # => false
-      snippet = text.split("# ").last
-      "<h1>#{snippet}</h1>"
-    elsif text.include? "/n/n"                # => false
-      snippet = text
-      "<p>#{snippet}</p>"
-    else
-      snippet = text                        # => "Hi my name is Shannon.\nI like wine."
-      "<p>#{snippet}</p>"                   # => "<p>Hi my name is Shannon.\nI like wine.</p>"
-    end                                     # => "<p>Hi my name is Shannon.\nI like wine.</p>"
-  end                                       # => :parse
-end                                         # => :parse
+  def initialize(text)
+    @text = text
+  end
 
-chisel = Chisel.new  # => #<Chisel:0x007fe51b9679d8>
-chisel.parse("Hi my name is Shannon.
+  def split_and_parse
+    array = @text.split("\n\n")
 
-I like wine.")       # => "<p>Hi my name is Shannon.\nI like wine.</p>"
+    array.map! do |f|
+      Headers.new(f).parse_headers
+    end
 
-# chisel = Chisel.new
-# input_string = File.open(ARGV[0]).read
-# output_file = File.open(ARGV[1], "w")
-# output_file.write(chisel.parse(input_string))
+    array.map! do |f|
+      Lists.new(f).parse_ul_lists
+    end
+
+    array.map! do |f|
+      Lists.new(f).parse_ol_lists
+    end
+
+    array.map! do |f|
+      Formatting.new(f).parse_formatting
+    end
+
+    array.map! do |f|
+      Formatting.new(f).parse_paragraphs
+    end
+
+    array.map! do |f|
+      Formatting.new(f).parse_ampersands
+    end
+
+    array.join
+  end
+
+end
+
+if __FILE__==$0
+  input_string = File.open(ARGV[0]).read
+  input_lines = input_string.lines.count
+  output_file = File.open(ARGV[1], "w")
+  chisel = Chisel.new(input_string)
+  output_string = chisel.split_and_parse
+  output_lines = output_string.lines.count
+  output_file.write(output_string)
+  puts "Converted #{ARGV[0]} (#{input_lines} lines) to #{ARGV[1]} (#{output_lines} lines)"
+end
